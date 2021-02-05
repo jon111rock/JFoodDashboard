@@ -76,25 +76,37 @@
             </div>
           </div>
 
-          <h2>Section title</h2>
+          <!-- table -->
+
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary mb-3 float-right"
+          >
+            新增商品
+          </button>
           <div class="table-responsive">
             <table class="table table-striped table-sm">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Header</th>
-                  <th>Header</th>
-                  <th>Header</th>
-                  <th>Header</th>
+                  <th>ID</th>
+                  <th>商品名稱</th>
+                  <th>價格</th>
+                  <th>描述</th>
+                  <th>啟用狀態</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>1,001</td>
-                  <td>random</td>
-                  <td>data</td>
-                  <td>placeholder</td>
-                  <td>text</td>
+                <tr v-for="item in products" :key="item.id">
+                  <td>{{ item.id }}</td>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.price }}</td>
+                  <td>{{ item.description }}</td>
+                  <td>{{ item.state }}</td>
+                  <td>
+                    <button class="btn btn-primary mr-1">編輯</button>
+                    <button class="btn btn-primary">刪除</button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -109,7 +121,16 @@
 /* global $ */
 export default {
   name: "Home",
-  components: {},
+  data() {
+    return {
+      products: [],
+    };
+  },
+  mounted() {
+    this.axios.get("https://localhost:5001/api/products").then((res) => {
+      this.products = res.data;
+    });
+  },
 };
 </script>
 <style lang="css" scoped>
