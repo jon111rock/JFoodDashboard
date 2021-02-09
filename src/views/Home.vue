@@ -23,9 +23,9 @@
         </li>
       </ul>
     </nav>
-    <!-- sidebar  -->
     <div class="container-fluid">
       <div class="row">
+        <!-- sidebar  -->
         <nav
           id="sidebarMenu"
           class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse"
@@ -76,16 +76,121 @@
             </div>
           </div>
 
-          <!-- table -->
-
           <button
             type="button"
             class="btn btn-sm btn-outline-secondary mb-3 float-right"
+            @click="openModal(true)"
           >
             新增商品
           </button>
+
+          <!-- modal -->
+          <div
+            class="modal fade"
+            id="exampleModal"
+            tabindex="-1"
+            aria-labelledby="exampleModalLabel"
+            aria-hidden="true"
+          >
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">
+                    新增商品
+                  </h5>
+                  <button
+                    type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close"
+                  >
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form>
+                    <div class="form-group">
+                      <div class="custom-file">
+                        <input
+                          type="file"
+                          class="custom-file-input"
+                          id="customFile"
+                          lang="cn"
+                        />
+                        <label class="custom-file-label" for="customFile"
+                          >請選擇圖片</label
+                        >
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="product-name" class="col-form-label"
+                        >商品名稱 :</label
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="product-name"
+                        v-model="tempProduct.name"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="product-price" class="col-form-label"
+                        >價格 :</label
+                      >
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="product-price"
+                        v-model="tempProduct.price"
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="message-text" class="col-form-label"
+                        >商品描述 :</label
+                      >
+                      <textarea
+                        class="form-control"
+                        id="message-text"
+                        v-model="tempProduct.description"
+                      ></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label for="state-bool" class="col-form-label"
+                        >是否啟用 :
+                      </label>
+                      <input
+                        type="checkbox"
+                        id="state-bool"
+                        class="d-block mx-auto"
+                        v-model="tempProduct.state"
+                        true-value="1"
+                        false-value="0"
+                      />
+                    </div>
+                  </form>
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-dismiss="modal"
+                  >
+                    取消
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    @click="updateProduct"
+                  >
+                    新增
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- table -->
           <div class="table-responsive">
-            <table class="table table-striped table-sm">
+            <table class="table table-striped table-sm" v-if="isConnect">
               <thead>
                 <tr>
                   <th>ID</th>
@@ -104,12 +209,23 @@
                   <td>{{ item.description }}</td>
                   <td>{{ item.state }}</td>
                   <td>
-                    <button class="btn btn-primary mr-1">編輯</button>
-                    <button class="btn btn-primary">刪除</button>
+                    <button
+                      class="btn btn-primary mr-1"
+                      @click="openModal(false, item)"
+                    >
+                      編輯
+                    </button>
+                    <button
+                      class="btn btn-primary"
+                      @click="deleteProduct(item.id)"
+                    >
+                      刪除
+                    </button>
                   </td>
                 </tr>
               </tbody>
             </table>
+            <div v-else>連線失敗，請檢查伺服器狀態</div>
           </div>
         </main>
       </div>
@@ -124,12 +240,83 @@ export default {
   data() {
     return {
       products: [],
+      isConnect: false,
+      tempProduct: {},
+      isNew: false,
     };
   },
   mounted() {
-    this.axios.get("https://localhost:5001/api/products").then((res) => {
-      this.products = res.data;
-    });
+    this.getProducts();
+  },
+  methods: {
+    getProducts() {
+      this.axios
+        .get("https://localhost:5001/api/products")
+        .then((res) => {
+          this.isConnect = true;
+          this.products = res.data;
+        })
+        .catch((err) => {
+          this.isConnect = false;
+          console.log("連線失敗");
+        });
+    },
+    updateProduct() {
+      var vm = this;
+      if (this.isNew) {
+        //新增商品
+        console.log("add");
+        console.log(this.tempProduct);
+        this.axios
+          .post("https://localhost:5001/api/products", this.tempProduct)
+          .then((res) => {
+            console.log("新增成功");
+            vm.getProducts();
+            $("#exampleModal").modal("hide");
+          })
+          .catch((err) => {
+            console.log("失敗", err);
+          });
+      } else {
+        //更新商品
+        this.axios
+          .put(
+            `https://localhost:5001/api/products/${this.tempProduct.id}`,
+            this.tempProduct
+          )
+          .then((res) => {
+            console.log("成功更新商品");
+            vm.getProducts();
+            $("#exampleModal").modal("hide");
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    },
+
+    deleteProduct(Id) {
+      var vm = this;
+      this.axios
+        .delete(`https://localhost:5001/api/products/${Id}`)
+        .then((res) => {
+          console.log("刪除成功");
+          vm.getProducts();
+        })
+        .catch((err) => {
+          console.log("刪除失敗");
+        });
+    },
+    openModal(isNew, item) {
+      if (isNew) {
+        this.isNew = isNew;
+        this.tempProduct = {};
+      } else {
+        this.isNew = isNew;
+        this.tempProduct = item;
+      }
+      $("#exampleModal").modal("show");
+    },
   },
 };
 </script>
