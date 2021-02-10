@@ -130,6 +130,13 @@
                       </div>
                     </div>
                     <div class="form-group">
+                      <img
+                        :src="tempProduct.photoUrl"
+                        style="width:150px; height:150px image-resolution: 36dpi; "
+                        class="img-fluid"
+                      />
+                    </div>
+                    <div class="form-group">
                       <label for="product-name" class="col-form-label"
                         >商品名稱 :</label
                       >
