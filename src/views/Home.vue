@@ -75,7 +75,6 @@
               </div>
             </div>
           </div>
-
           <button
             type="button"
             class="btn btn-sm btn-outline-secondary mb-3 float-right"
@@ -116,10 +115,20 @@
                           class="custom-file-input"
                           id="customFile"
                           lang="cn"
+                          accept="image/*"
+                          @change="showFile"
                         />
-                        <label class="custom-file-label" for="customFile"
-                          >請選擇圖片</label
-                        >
+                        <label class="custom-file-label" for="customFile">
+                          <span v-if="tempFile.name == null">
+                            請選擇圖片
+                          </span>
+                          <span v-else>
+                            {{ tempFile.name }}
+                          </span>
+                        </label>
+                        <button class="btn btn-primary m-3" @click="upload">
+                          上傳
+                        </button>
                       </div>
                     </div>
                     <div class="form-group">
@@ -234,6 +243,8 @@
 </template>
 
 <script>
+const token = "f1583d9188297b01ab127ca75ac77ab512902cb7";
+const album = "Nvd1cBr";
 /* global $ */
 export default {
   name: "Home",
@@ -242,6 +253,7 @@ export default {
       products: [],
       isConnect: false,
       tempProduct: {},
+      tempFile: {},
       isNew: false,
     };
   },
@@ -249,6 +261,40 @@ export default {
     this.getProducts();
   },
   methods: {
+    showFile(e) {
+      this.tempFile = e.target.files[0];
+      console.log(this.tempFile);
+    },
+    upload() {
+      let vm = this;
+
+      let settings = {
+        async: true,
+        crossDomain: true,
+        processData: false,
+        contentType: false,
+        type: "POST",
+        dataType: "json",
+        url: "https://api.imgur.com/3/image",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+        mimeType: "multipart/form-data",
+      };
+
+      let form = new FormData();
+      form.append("image", this.tempFile);
+      form.append("title", this.tempFile.name);
+      form.append("description", "test");
+      form.append("album", album); // 有要指定的相簿就加這行
+
+      settings.data = form;
+
+      $.ajax(settings).done(function(res) {
+        vm.tempProduct.photoUrl = res.data.link;
+        console.log(res.data.link); // 可以看見上傳成功後回的值
+      });
+    },
     getProducts() {
       this.axios
         .get("https://localhost:5001/api/products")
@@ -311,9 +357,11 @@ export default {
       if (isNew) {
         this.isNew = isNew;
         this.tempProduct = {};
+        this.tempFile = {};
       } else {
         this.isNew = isNew;
         this.tempProduct = item;
+        this.tempFile.name = item.photoUrl;
       }
       $("#exampleModal").modal("show");
     },
