@@ -119,16 +119,14 @@
                           @change="showFile"
                         />
                         <label class="custom-file-label" for="customFile">
-                          <span v-if="tempFile.name == null">
-                            請選擇圖片
-                          </span>
-                          <span v-else>
-                            {{ tempFile.name }}
-                          </span>
+                          <div>{{ fileDisplay }}</div>
                         </label>
                         <button class="btn btn-primary m-3" @click="upload">
                           上傳
                         </button>
+                        <div v-if="isUploadSuccess" style="color:green;">
+                          上傳成功
+                        </div>
                       </div>
                     </div>
                     <div class="form-group">
@@ -255,6 +253,8 @@ export default {
       tempProduct: {},
       tempFile: {},
       isNew: false,
+      fileDisplay: "請選擇圖片",
+      isUploadSuccess: false,
     };
   },
   mounted() {
@@ -263,7 +263,8 @@ export default {
   methods: {
     showFile(e) {
       this.tempFile = e.target.files[0];
-      console.log(this.tempFile);
+      this.tempProduct.photoUrl = this.tempFile.name;
+      this.fileDisplay = this.tempFile.name;
     },
     upload() {
       let vm = this;
@@ -292,6 +293,7 @@ export default {
 
       $.ajax(settings).done(function(res) {
         vm.tempProduct.photoUrl = res.data.link;
+        vm.isUploadSuccess = true;
         console.log(res.data.link); // 可以看見上傳成功後回的值
       });
     },
@@ -354,14 +356,20 @@ export default {
         });
     },
     openModal(isNew, item) {
+      console.log(this.tempFile);
       if (isNew) {
+        console.log("new item");
         this.isNew = isNew;
         this.tempProduct = {};
         this.tempFile = {};
+        this.fileDisplay = "請選擇圖片";
+        this.isUploadSuccess = false;
       } else {
+        console.log("edit item");
         this.isNew = isNew;
         this.tempProduct = item;
-        this.tempFile.name = item.photoUrl;
+        this.fileDisplay = item.photoUrl;
+        this.isUploadSuccess = false;
       }
       $("#exampleModal").modal("show");
     },
