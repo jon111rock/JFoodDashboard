@@ -46,7 +46,7 @@
           <div
             class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
           >
-            <h1 class="h2">Dashboard</h1>
+            <h1 class="h2">商品列表</h1>
             <div class="btn-toolbar mb-2 mb-md-0">
               <div class="btn-group mr-2">
                 <button type="button" class="btn btn-sm btn-outline-secondary">
@@ -196,7 +196,7 @@
                     class="btn btn-primary"
                     @click="updateProduct"
                   >
-                    新增
+                    確認
                   </button>
                 </div>
               </div>
@@ -207,7 +207,7 @@
             <table class="table table-striped table-sm" v-if="isConnect">
               <thead>
                 <tr>
-                  <th>ID</th>
+                  <th>商品圖片</th>
                   <th>商品名稱</th>
                   <th>價格</th>
                   <th>描述</th>
@@ -217,11 +217,26 @@
               </thead>
               <tbody>
                 <tr v-for="item in products" :key="item.id">
-                  <td>{{ item.id }}</td>
+                  <td>
+                    <a :href="item.photoUrl">
+                      <img
+                        :src="item.photoUrl"
+                        style="width:100px; height:100px image-resolution: 36dpi; "
+                        class="img-fluid"
+                      />
+                    </a>
+                  </td>
                   <td>{{ item.name }}</td>
                   <td>{{ item.price }}</td>
                   <td>{{ item.description }}</td>
-                  <td>{{ item.state }}</td>
+                  <td>
+                    <div v-if="item.state == 1">
+                      <span style="color:green;">已啟用</span>
+                    </div>
+                    <div v-else>
+                      <span style="color:red;">停售</span>
+                    </div>
+                  </td>
                   <td>
                     <button
                       class="btn btn-primary mr-1"
