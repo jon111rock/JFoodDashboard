@@ -47,16 +47,18 @@
             class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
           >
             <h1 class="h2">商品列表</h1>
+            <!--ProductType Toolbar -->
             <div class="btn-toolbar mb-2 mb-md-0">
               <div class="btn-group mr-2">
                 <button type="button" class="btn btn-sm btn-outline-secondary">
-                  Share
+                  新增類別
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-secondary">
-                  Export
+                  編輯類別
                 </button>
               </div>
-              <div class="dropdown">
+              <!-- Dropdown -->
+              <div class="dropdown dropleft">
                 <button
                   class="btn btn-secondary dropdown-toggle"
                   type="button"
@@ -65,12 +67,12 @@
                   aria-haspopup="true"
                   aria-expanded="false"
                 >
-                  Dropdown button
+                  {{ productTypes[0].name }}
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="#">Action</a>
-                  <a class="dropdown-item" href="#">Another action</a>
-                  <a class="dropdown-item" href="#">Something else here</a>
+                  <div v-for="(item, key) in productTypes" :key="key">
+                    <a class="dropdown-item" href="#">{{ item.name }}</a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -86,15 +88,15 @@
           <!-- modal -->
           <div
             class="modal fade"
-            id="exampleModal"
+            id="addProductModal"
             tabindex="-1"
-            aria-labelledby="exampleModalLabel"
+            aria-labelledby="addProductModalModalLabel"
             aria-hidden="true"
           >
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h5 class="modal-title" id="exampleModalLabel">
+                  <h5 class="modal-title" id="addProductModalModalLabel">
                     新增商品
                   </h5>
                   <button
@@ -277,10 +279,13 @@ export default {
       isNew: false,
       fileDisplay: "請選擇圖片",
       isUploadSuccess: false,
+      //ProductType
+      productTypes: [],
     };
   },
   mounted() {
     this.getProducts();
+    this.getProductType();
   },
   methods: {
     showFile(e) {
@@ -342,7 +347,7 @@ export default {
           .then((res) => {
             console.log("新增成功");
             vm.getProducts();
-            $("#exampleModal").modal("hide");
+            $("#addProductModal").modal("hide");
           })
           .catch((err) => {
             console.log("失敗", err);
@@ -357,7 +362,7 @@ export default {
           .then((res) => {
             console.log("成功更新商品");
             vm.getProducts();
-            $("#exampleModal").modal("hide");
+            $("#addProductModal").modal("hide");
           })
           .catch((err) => {
             console.log(err);
@@ -377,6 +382,19 @@ export default {
           console.log("刪除失敗");
         });
     },
+    //ProductType
+    getProductType() {
+      var vm = this;
+      this.axios
+        .get("https://localhost:5001/api/producttypes")
+        .then((res) => {
+          console.log(res);
+          vm.productTypes = res.data;
+        })
+        .catch((err) => {
+          console.log("無法取得類別清單", err);
+        });
+    },
     openModal(isNew, item) {
       console.log(this.tempFile);
       if (isNew) {
@@ -393,7 +411,7 @@ export default {
         this.fileDisplay = item.photoUrl;
         this.isUploadSuccess = false;
       }
-      $("#exampleModal").modal("show");
+      $("#addProductModal").modal("show");
     },
   },
 };
