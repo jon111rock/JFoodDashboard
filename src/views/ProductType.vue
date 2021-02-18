@@ -10,7 +10,7 @@
     <button
       type="button"
       class="btn btn-sm btn-outline-secondary mb-3 float-right"
-      @click="openProductTypeModal"
+      @click="openProductTypeModal(null)"
     >
       新增類別
     </button>
@@ -95,11 +95,26 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>test</td>
-            <td>已啟用</td>
+          <tr v-for="(item, key) in productTypes" :key="key">
+            <td>{{ item.name }}</td>
             <td>
-              <button class="btn btn-primary">test</button>
+              <div v-if="item.state == 1">
+                <span style="color:green;">已啟用</span>
+              </div>
+              <div v-else>
+                <span style="color:red;">停售</span>
+              </div>
+            </td>
+            <td>
+              <button
+                class="btn btn-primary mr-1"
+                @click="openProductTypeModal(item)"
+              >
+                編輯
+              </button>
+              <button class="btn btn-primary" @click="deleteProductType(item)">
+                刪除
+              </button>
             </td>
           </tr>
         </tbody>
@@ -114,40 +129,75 @@ export default {
     return {
       productTypes: {},
       tempProductType: {},
+      isNew: true,
     };
   },
   mounted() {
     this.getProductType();
   },
   methods: {
-    //ProductType
     getProductType() {
-      console.log("取得列表");
       var vm = this;
       this.axios
         .get("https://localhost:5001/api/producttypes")
         .then((res) => {
           vm.productTypes = res.data;
+          console.log(res.data);
         })
         .catch((err) => {
           console.log("無法取得類別清單", err);
         });
     },
-    updateProductType() {
+    deleteProductType(item) {
       var vm = this;
       this.axios
-        .post("https://localhost:5001/api/producttypes", this.tempProductType)
+        .delete(`https://localhost:5001/api/producttypes/${item.productTypeId}`)
         .then((res) => {
-          console.log("新增類別成功");
-          $("#producgtTypeModal").modal("hide");
+          console.log("刪除成功", res);
           vm.getProductType();
         })
         .catch((err) => {
-          console.log("新增類別失敗", err);
+          console.log("刪除失敗", err);
         });
     },
-    openProductTypeModal() {
-      this.tempProductType = {};
+    updateProductType() {
+      var vm = this;
+      if (this.isNew) {
+        this.axios
+          .post("https://localhost:5001/api/producttypes", this.tempProductType)
+          .then((res) => {
+            console.log("新增類別成功");
+            $("#productTypeModal").modal("hide");
+            vm.getProductType();
+          })
+          .catch((err) => {
+            console.log("新增類別失敗", err);
+          });
+      } else {
+        this.axios
+          .put(
+            `https://localhost:5001/api/producttypes/${vm.tempProductType.productTypeId}`,
+            vm.tempProductType
+          )
+          .then((res) => {
+            console.log("更新類別成功", res);
+            $("#productTypeModal").modal("hide");
+          })
+          .catch((err) => {
+            console.log("更新類別失敗", err);
+          });
+      }
+    },
+    openProductTypeModal(item) {
+      if (item == null) {
+        console.log("新增");
+        this.tempProductType = {};
+        this.isNew = true;
+      } else {
+        console.log("編輯");
+        this.tempProductType = item;
+        this.isNew = false;
+      }
       $("#productTypeModal").modal("show");
     },
   },
