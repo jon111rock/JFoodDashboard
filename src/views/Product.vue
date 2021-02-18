@@ -6,14 +6,37 @@
     >
       <h1 class="h2">商品列表</h1>
     </div>
-    <!-- Button -->
-    <button
-      type="button"
-      class="btn btn-sm btn-outline-secondary mb-3 float-right"
-      @click="openModal(true)"
-    >
-      新增商品
-    </button>
+    <!-- Button Group -->
+    <div class="btn-group float-right">
+      <!-- Button -->
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary mr-3"
+        @click="openModal(true)"
+      >
+        新增商品
+      </button>
+      <!-- Dropdown -->
+      <div class="dropdown">
+        <button
+          class="btn btn-secondary dropdown-toggle"
+          type="button"
+          id="dropdownMenuButton"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          {{ currentTypes.name }}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <div v-for="(item, key) in productTypes" :key="key">
+            <a class="dropdown-item" @click="chooseType(item)">{{
+              item.name
+            }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
     <!--NewProduct modal -->
     <div
       class="modal fade"
@@ -110,6 +133,10 @@
                   false-value="0"
                 />
               </div>
+              <div class="form-group">
+                <label for="message-text" class="col-form-label">類別 :</label>
+                <p>{{ currentTypes.name }}</p>
+              </div>
             </form>
           </div>
           <div class="modal-footer">
@@ -133,7 +160,7 @@
     </div>
     <!-- table -->
     <div class="table-responsive">
-      <table class="table table-striped table-sm" v-if="isConnect">
+      <table class="table table-striped table-sm mt-3" v-if="isConnect">
         <thead>
           <tr>
             <th>商品圖片</th>
@@ -202,11 +229,13 @@ export default {
       isUploadSuccess: false,
       //ProductType
       productTypes: [],
-      tempProductType: {},
+      currentTypes: {},
+      test: [],
     };
   },
   mounted() {
     this.getProducts();
+    this.getProductTypes();
   },
   methods: {
     showFile(e) {
@@ -254,14 +283,30 @@ export default {
         })
         .catch((err) => {
           this.isConnect = false;
-          console.log("連線失敗");
+          console.log("連線失敗", err);
+        });
+    },
+    getProductTypes() {
+      this.axios
+        .get("https://localhost:5001/api/producttypes")
+        .then((res) => {
+          res.data.forEach((i) => {
+            if (i.state > 0) {
+              this.productTypes.push(i);
+            }
+          });
+          this.currentTypes = this.productTypes[0];
+        })
+        .catch((err) => {
+          console.log("取得類別失敗", err);
         });
     },
     updateProduct() {
       var vm = this;
       if (this.isNew) {
         //新增商品
-        console.log("add");
+        // console.log("add");
+        this.tempProduct.productTypeId = this.currentTypes.productTypeId; //自動套用類別編號
         console.log(this.tempProduct);
         this.axios
           .post("https://localhost:5001/api/products", this.tempProduct)
@@ -320,6 +365,9 @@ export default {
         this.isUploadSuccess = false;
       }
       $("#addProductModal").modal("show");
+    },
+    chooseType(item) {
+      this.currentTypes = item;
     },
   },
 };
