@@ -234,8 +234,8 @@ export default {
     };
   },
   mounted() {
-    this.getProducts();
     this.getProductTypes();
+    this.getProducts();
   },
   methods: {
     showFile(e) {
@@ -275,11 +275,18 @@ export default {
       });
     },
     getProducts() {
+      var vm = this;
+      this.products = [];
       this.axios
         .get("https://localhost:5001/api/products")
         .then((res) => {
           this.isConnect = true;
-          this.products = res.data;
+          // this.products = res.data;
+          res.data.forEach((i) => {
+            if (i.productTypeId == vm.currentTypes.productTypeId) {
+              this.products.push(i);
+            }
+          });
         })
         .catch((err) => {
           this.isConnect = false;
@@ -287,6 +294,7 @@ export default {
         });
     },
     getProductTypes() {
+      this.productTypes = [];
       this.axios
         .get("https://localhost:5001/api/producttypes")
         .then((res) => {
@@ -368,6 +376,7 @@ export default {
     },
     chooseType(item) {
       this.currentTypes = item;
+      this.getProducts();
     },
   },
 };
