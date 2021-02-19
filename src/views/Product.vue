@@ -158,6 +158,43 @@
         </div>
       </div>
     </div>
+    <!-- Delete modal -->
+    <div class="modal fade" tabindex="-1" id="deleteModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">刪除商品</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>確定要刪除嗎?</p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="deleteProduct()"
+            >
+              確定
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- table -->
     <div class="table-responsive">
       <table class="table table-striped table-sm mt-3" v-if="isConnect">
@@ -200,7 +237,7 @@
               >
                 編輯
               </button>
-              <button class="btn btn-primary" @click="deleteProduct(item.id)">
+              <button class="btn btn-primary" @click="openDeleteModal(item.id)">
                 刪除
               </button>
             </td>
@@ -231,6 +268,8 @@ export default {
       productTypes: [],
       currentTypes: {},
       test: [],
+      //deleteModal
+      tempProductId: null,
     };
   },
   mounted() {
@@ -344,12 +383,13 @@ export default {
       }
     },
 
-    deleteProduct(Id) {
+    deleteProduct() {
       var vm = this;
       this.axios
-        .delete(`https://localhost:5001/api/products/${Id}`)
+        .delete(`https://localhost:5001/api/products/${this.tempProductId}`)
         .then((res) => {
           console.log("刪除成功");
+          $("#deleteModal").modal("hide");
           vm.getProducts();
         })
         .catch((err) => {
@@ -373,6 +413,11 @@ export default {
         this.isUploadSuccess = false;
       }
       $("#addProductModal").modal("show");
+    },
+    openDeleteModal(id) {
+      this.tempProductId = null;
+      $("#deleteModal").modal("show");
+      this.tempProductId = id;
     },
     chooseType(item) {
       this.currentTypes = item;
