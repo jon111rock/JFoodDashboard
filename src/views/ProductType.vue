@@ -84,6 +84,43 @@
         </div>
       </div>
     </div>
+    <!-- Delete modal -->
+    <div class="modal fade" tabindex="-1" id="deleteModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">刪除類別</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>該類別的商品也會一併刪除，確定要刪除嗎?</p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="deleteProductType()"
+            >
+              確定
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- table -->
     <div class="table-responsive">
       <table class="table table-striped table-sm mt-3">
@@ -112,7 +149,10 @@
               >
                 編輯
               </button>
-              <button class="btn btn-primary" @click="deleteProductType(item)">
+              <button
+                class="btn btn-primary"
+                @click="openDeleteModal(item.productTypeId)"
+              >
                 刪除
               </button>
             </td>
@@ -130,6 +170,7 @@ export default {
       productTypes: {},
       tempProductType: {},
       isNew: true,
+      tempProductTypeId: null,
     };
   },
   mounted() {
@@ -142,23 +183,30 @@ export default {
         .get("https://localhost:5001/api/producttypes")
         .then((res) => {
           vm.productTypes = res.data;
-          console.log(res.data);
+          // console.log(res.data);
         })
         .catch((err) => {
           console.log("無法取得類別清單", err);
         });
     },
-    deleteProductType(item) {
+    deleteProductType() {
       var vm = this;
       this.axios
-        .delete(`https://localhost:5001/api/producttypes/${item.productTypeId}`)
+        .delete(
+          `https://localhost:5001/api/producttypes/${this.tempProductTypeId}`
+        )
         .then((res) => {
           console.log("刪除成功", res);
+          $("#deleteModal").modal("hide");
           vm.getProductType();
         })
         .catch((err) => {
           console.log("刪除失敗", err);
         });
+    },
+    openDeleteModal(id) {
+      this.tempProductTypeId = id;
+      $("#deleteModal").modal("show");
     },
     updateProductType() {
       var vm = this;
