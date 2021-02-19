@@ -78,6 +78,9 @@
                   <button class="btn btn-primary m-3" @click="upload">
                     上傳
                   </button>
+                  <div class="spinner-border" role="status" v-if="isUpload">
+                    <span class="sr-only">Loading...</span>
+                  </div>
                   <div v-if="isUploadSuccess" style="color:green;">
                     上傳成功
                   </div>
@@ -258,18 +261,18 @@ export default {
   data() {
     return {
       products: [],
+      productTypes: [],
       isConnect: false,
       tempProduct: {},
       tempFile: {},
+      tempProductId: null,
+      currentTypes: {},
       isNew: false,
-      fileDisplay: "請選擇圖片",
+      isUpload: false,
       isUploadSuccess: false,
       //ProductType
-      productTypes: [],
-      currentTypes: {},
-      test: [],
       //deleteModal
-      tempProductId: null,
+      fileDisplay: "請選擇圖片",
     };
   },
   mounted() {
@@ -284,7 +287,7 @@ export default {
     },
     upload() {
       let vm = this;
-
+      this.isUpload = true;
       let settings = {
         async: true,
         crossDomain: true,
@@ -302,7 +305,7 @@ export default {
       let form = new FormData();
       form.append("image", this.tempFile);
       form.append("title", this.tempFile.name);
-      form.append("description", "test");
+      form.append("description", "甲j便當照片");
       form.append("album", album); // 有要指定的相簿就加這行
 
       settings.data = form;
@@ -310,7 +313,8 @@ export default {
       $.ajax(settings).done(function(res) {
         vm.tempProduct.photoUrl = res.data.link;
         vm.isUploadSuccess = true;
-        console.log(res.data.link); // 可以看見上傳成功後回的值
+        vm.isUpload = false;
+        // console.log(res.data.link);
       });
     },
     getProducts() {
@@ -397,16 +401,16 @@ export default {
         });
     },
     openModal(isNew, item) {
-      console.log(this.tempFile);
+      // console.log(this.tempFile);
       if (isNew) {
-        console.log("new item");
+        // console.log("new item");
         this.isNew = isNew;
         this.tempProduct = {};
         this.tempFile = {};
         this.fileDisplay = "請選擇圖片";
         this.isUploadSuccess = false;
       } else {
-        console.log("edit item");
+        // console.log("edit item");
         this.isNew = isNew;
         this.tempProduct = item;
         this.fileDisplay = item.photoUrl;
